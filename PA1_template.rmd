@@ -71,12 +71,10 @@ activityfilled$steps <- with(activityfilled, impute(steps, mean))
 ```  
 Calculate the total number of steps per day with the filled data set and produce a histogram showing the data:
 ```{r, echo=TRUE}
-library(grid)
-library(gridExtra)
 totalstepsfilled <- tapply(activityfilled$steps, activityfilled$date, FUN=sum)
 p3<-qplot(totalstepsfilled,binwidth=250,xlab="Total steps per day",
           ylab="Frequency",main="Filled data")
-grid.arrange(p1,p3,ncol=2)
+p3
 ```  
 
 Determine the mean and median number of steps per day with the filled data set:
