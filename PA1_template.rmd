@@ -36,7 +36,8 @@ Calculate the total number of steps per day and produce a histogram showing the 
 ```{r, echo=TRUE}
 library(ggplot2)
 totalsteps <- tapply(activity$steps, activity$date, FUN=sum, na.rm=TRUE)
-qplot(totalsteps,xlab="Total steps per day",ylab="Frequency",main="Frequency of total steps per day")
+p1<-qplot(totalsteps,binwidth=250,xlab="Total steps per day",ylab="Frequency",main="Frequency of total steps per day")
+p1
 ```  
 
 Determine the mean and median number of steps per day:
@@ -47,16 +48,65 @@ median(totalsteps)
 ###What is the average daily activity pattern?
 Calculate the average number of steps as a function of time and present it in a line plot:
 ```{r, echo=TRUE}
-dailyactivity <- aggregate(x=list(steps=activity$steps), by=list(interval=activity$interval),
-                      FUN=mean, na.rm=TRUE)
-ggplot(data=dailyactivity, aes(x=interval, y=steps)) +
-geom_line() +
-xlab("Time interval (minutes)") +
-ylab("Average steps taken") +
-ggtitle("Average steps as a function of time")  
+dailyactivity <- aggregate(steps~interval, data=activity, mean)
+p2<-ggplot(data=dailyactivity, aes(x=interval, y=steps)) +
+  geom_line() +
+  xlab("Time interval (minutes)") +
+  ylab("Average steps taken") +
+  ggtitle("Average steps as a function of time")  
+p2
 ```  
 
 Determine which time (in 5 minute intervals) has the largest number of steps:
 ```{r, echo=TRUE}
 dailyactivity[which.max(dailyactivity$steps),]
-```
+```  
+###Imputing missing values
+Calculate and report the total number of missing vlaues in the data set:
+```{r, echo=TRUE}
+sum(is.na(activity))
+```  
+
+Fill in missing data with the average number of steps per interval then apply it to the whole data set:
+```{r, echo=TRUE}
+library(Hmisc)
+activityfilled<- activity
+activityfilled$steps <- with(activityfilled, impute(steps, mean))
+```  
+Calculate the total number of steps per day with the filled data set and produce a histogram showing the data:
+```{r, echo=TRUE}
+library(grid)
+library(gridExtra)
+totalstepsfilled <- tapply(activityfilled$steps, activityfilled$date, FUN=sum)
+p3<-qplot(totalstepsfilled,binwidth=250,xlab="Total steps per day",ylab="Frequency",main="Frequency of total steps per day")
+grid.arrange(p1,p3,ncol=2)
+```  
+
+Determine the mean and median number of steps per day with the filled data set:
+```{r, echo=TRUE}
+mean(totalstepsfilled)
+median(totalstepsfilled)
+```  
+The values for mean and median of the total number of steps differ from the data set with missign values. Both values are now higher because we filled in missing data with the average value for the 5 minute intervals.
+###Are there differences in activity patterns between weekdays and weekends?
+Create a function to differentiate between weekdays and weekends and and add it to data frame:
+```{r, echo=TRUE}
+daytype <- function(date) {
+  if (weekdays(date) %in% c('Saturday', 'Sunday')) {
+    return('Weekend')
+  } else {
+    return('Weekday')
+  }
+}
+activityfilled$date<-as.Date(activityfilled$date)
+activityfilled$day <- sapply(activityfilled$date, FUN=daytype)
+``` 
+Create a line plot for both weekend and weekdays to show difference in activity level:
+```{r, echo=TRUE}
+activityaverages <- aggregate(steps ~ interval + day, data=activityfilled, mean)
+ggplot(activityaverages, aes(interval, steps)) +
+  geom_line() + 
+  facet_grid(day ~ .) +
+  xlab("Time interval (minutes)") +
+  ylab("Average steps taken")
+``` 
