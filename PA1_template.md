@@ -22,28 +22,45 @@ The dataset is stored in a comma-separated-value (CSV) file and there are a tota
 ###Loading and preprocessing the data
 
 In order to load the data unzip it and read it into a new variable:
-```{r, echo=TRUE}
+
+```r
 unzip(zipfile="repdata-data-activity.zip")
 activity<-read.csv("activity.csv")
-```  
+```
 ###What is mean total number of steps taken per day?
 Calculate the total number of steps per day and produce a histogram showing the data:
-```{r, echo=TRUE}
+
+```r
 library(ggplot2)
 totalsteps <- tapply(activity$steps, activity$date, FUN=sum, na.rm=TRUE)
 p1<-qplot(totalsteps,binwidth=250,xlab="Total steps per day",
           ylab="Frequency",main="Missing data")
 p1
-```  
+```
+
+![plot of chunk unnamed-chunk-2](figure/unnamed-chunk-2-1.png) 
 
 Determine the mean and median number of steps per day:
-```{r, echo=TRUE}
+
+```r
 mean(totalsteps)
+```
+
+```
+## [1] 9354.23
+```
+
+```r
 median(totalsteps)
-```  
+```
+
+```
+## [1] 10395
+```
 ###What is the average daily activity pattern?
 Calculate the average number of steps as a function of time and present it in a line plot:
-```{r, echo=TRUE}
+
+```r
 dailyactivity <- aggregate(steps~interval, data=activity, mean)
 p2<-ggplot(data=dailyactivity, aes(x=interval, y=steps)) +
   geom_line() +
@@ -51,43 +68,73 @@ p2<-ggplot(data=dailyactivity, aes(x=interval, y=steps)) +
   ylab("Average steps taken") +
   ggtitle("Average steps as a function of time")  
 p2
-```  
+```
+
+![plot of chunk unnamed-chunk-4](figure/unnamed-chunk-4-1.png) 
 
 Determine which time (in 5 minute intervals) has the largest number of steps:
-```{r, echo=TRUE}
+
+```r
 dailyactivity[which.max(dailyactivity$steps),]
-```  
+```
+
+```
+##     interval    steps
+## 104      835 206.1698
+```
 ###Imputing missing values
 Calculate and report the total number of missing vlaues in the data set:
-```{r, echo=TRUE}
+
+```r
 sum(is.na(activity))
-```  
+```
+
+```
+## [1] 2304
+```
 
 Fill in missing data with the average number of steps per interval then apply it to the whole data set:
-```{r, echo=TRUE}
+
+```r
 library(Hmisc)
 activityfilled<- activity
 activityfilled$steps <- with(activityfilled, impute(steps, mean))
-```  
+```
 Calculate the total number of steps per day with the filled data set and produce a histogram showing the data:
-```{r, echo=TRUE}
+
+```r
 library(grid)
 library(gridExtra)
 totalstepsfilled <- tapply(activityfilled$steps, activityfilled$date, FUN=sum)
 p3<-qplot(totalstepsfilled,binwidth=250,xlab="Total steps per day",
           ylab="Frequency",main="Filled data")
 grid.arrange(p1,p3,ncol=2)
-```  
+```
+
+![plot of chunk unnamed-chunk-8](figure/unnamed-chunk-8-1.png) 
 
 Determine the mean and median number of steps per day with the filled data set:
-```{r, echo=TRUE}
+
+```r
 mean(totalstepsfilled)
+```
+
+```
+## [1] 10766.19
+```
+
+```r
 median(totalstepsfilled)
-```  
+```
+
+```
+## [1] 10766.19
+```
 The values for mean and median of the total number of steps differ from the data set with missign values. Both values are now higher because we filled in missing data with the average value for the 5 minute intervals.
 ###Are there differences in activity patterns between weekdays and weekends?
 Create a function to differentiate between weekdays and weekends and and add it to data frame:
-```{r, echo=TRUE}
+
+```r
 daytype <- function(date) {
   if (weekdays(date) %in% c('Saturday', 'Sunday')) {
     return('Weekend')
@@ -97,13 +144,16 @@ daytype <- function(date) {
 }
 activityfilled$date<-as.Date(activityfilled$date)
 activityfilled$day <- sapply(activityfilled$date, FUN=daytype)
-``` 
+```
 Create a line plot for both weekend and weekdays to show difference in activity level:
-```{r, echo=TRUE}
+
+```r
 activityaverages <- aggregate(steps ~ interval + day, data=activityfilled, mean)
 ggplot(activityaverages, aes(interval, steps)) +
   geom_line() + 
   facet_grid(day ~ .) +
   xlab("Time interval (minutes)") +
   ylab("Average steps taken")
-``` 
+```
+
+![plot of chunk unnamed-chunk-11](figure/unnamed-chunk-11-1.png) 
