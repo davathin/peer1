@@ -1,9 +1,4 @@
----
-title: "Peer Assessment 1"
-author: "David C Latshaw II"
-date: "Wednesday, September 16, 2015"
-output: html_document
----
+#Peer Assessment 1 - David C Latshaw II
 
 ##Introduction
 
@@ -36,7 +31,8 @@ Calculate the total number of steps per day and produce a histogram showing the 
 ```{r, echo=TRUE}
 library(ggplot2)
 totalsteps <- tapply(activity$steps, activity$date, FUN=sum, na.rm=TRUE)
-p1<-qplot(totalsteps,binwidth=250,xlab="Total steps per day",ylab="Frequency",main="Frequency of total steps per day")
+p1<-qplot(totalsteps,binwidth=250,xlab="Total steps per day",
+          ylab="Frequency",main="Frequency of total steps per day")
 p1
 ```  
 
@@ -78,7 +74,8 @@ Calculate the total number of steps per day with the filled data set and produce
 library(grid)
 library(gridExtra)
 totalstepsfilled <- tapply(activityfilled$steps, activityfilled$date, FUN=sum)
-p3<-qplot(totalstepsfilled,binwidth=250,xlab="Total steps per day",ylab="Frequency",main="Frequency of total steps per day")
+p3<-qplot(totalstepsfilled,binwidth=250,xlab="Total steps per day",
+          ylab="Frequency",main="Frequency of total steps per day")
 grid.arrange(p1,p3,ncol=2)
 ```  
 
